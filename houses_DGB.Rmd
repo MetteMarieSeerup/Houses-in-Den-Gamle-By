@@ -1,0 +1,62 @@
+---
+title: "Houses in Den Gamle By"
+author: "Mette Marie Seerup"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Set up
+
+```{r set up}
+library(tidyverse)
+library(leaflet)
+library(here)
+dir.create("data")
+```
+
+# Building a base map
+
+```{r base map}
+Map <- leaflet() %>% 
+  addTiles() %>% 
+  setView(lng = 9.565772, lat = 56.1826356, zoom = 6.4)
+
+Map #shows the map
+```
+# Adding layers to the map
+
+```{r}
+Map <- Map %>% 
+  addProviderTiles("Esri.WorldStreetMap", group = "Street Map") %>% 
+  addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
+  addLayersControl(baseGroups = c("Street Map", "Satelite"),
+                   options = layersControlOptions(collapsed = TRUE)) %>% 
+  addMiniMap(width = 75, height = 75, toggleDisplay = TRUE)
+
+Map #shows the map
+```
+
+# Load in the data
+
+```{r data}
+places <- read.csv(here("data/Houses_DGB.csv"))
+```
+
+# Adding the data to the map
+
+```{r data to map}
+
+Map %>% 
+  addMarkers(lng = places$Longitude,
+             lat = places$Latitude,
+             popup = paste("<b>Hus:</b>", places$House, "<br>", "<b>Adresse:</b>", places$Address, "<br>", "<b>Byggeår:</b>", places$YearBuilt, "<br>", "<b>Genopført i DGB:</b>", places$YearRebuilt, "<br>", "<b>Beskrivelse:</b>", places$Description),
+             clusterOptions = markerClusterOptions()) -> Map
+          
+Map
+
+```
+
